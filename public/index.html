@@ -170,8 +170,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
    MOBILE  ≤768px
 ═══════════════════════════════════════════ */
 @media(max-width:768px){
-  /* Stack vertically */
-  #app.on{flex-direction:column}
+  /* App is a fixed full-screen flex column */
+  #app.on{
+    flex-direction:column;
+    position:fixed;inset:0;
+    height:100%;
+    overflow:hidden;
+  }
 
   /* Rail hidden */
   #rail{display:none}
@@ -186,8 +191,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
   }
   #sidebar.open{transform:translateX(0)}
 
-  /* Chat fills remaining space */
-  #chat{height:0;flex:1}
+  /* Chat fills space between topbar and bottom nav */
+  #chat{flex:1;min-height:0;overflow:hidden}
 
   /* Hamburger visible */
   .hambtn{display:flex}
@@ -196,21 +201,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-
   #topbar{padding:.75rem 1rem}
   .tbdesc{display:none}
 
-  /* Messages & input compact */
-  #msgs{padding:.75rem 1rem}
+  /* Messages scrollable */
+  #msgs{padding:.75rem 1rem;flex:1;min-height:0}
+
+  /* Typing bar */
   #typebar{padding:3px 1rem}
+
+  /* Input area */
   #inputarea{padding:.75rem 1rem;padding-bottom:max(.75rem,env(safe-area-inset-bottom))}
 
   /* Images full width */
   .mimg{max-width:100%}
 
-  /* Always show reaction btn (no hover on touch) */
+  /* Always show reaction btn */
   .macts{display:flex}
 
-  /* Bottom nav */
-  #bnav{display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  /* Bottom nav — always visible at bottom */
+  #bnav{
+    display:flex;
+    flex-shrink:0;
+    width:100%;
+    padding-bottom:env(safe-area-inset-bottom);
+    min-height:56px;
+  }
 
-  /* Emoji picker sticks to bottom */
+  /* Emoji picker sticks above bottom nav */
   .epicker{bottom:80px;top:auto !important;left:8px !important;right:8px !important;width:auto !important}
 }
 
