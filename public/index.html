@@ -404,6 +404,35 @@
       0%,100% { box-shadow: 0 0 6px var(--glow); }
       50% { box-shadow: 0 0 14px var(--glow); }
     }
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    /* ══ MOBILE ══ */
+    #mobile-nav { display: none; }
+
+    @media (max-width: 768px) {
+      .auth-card { width: 100%; max-width: 100%; min-height: 100vh; border-radius: 0; padding: 2rem 1.5rem; justify-content: center; }
+      #app { grid-template-columns: 1fr; position: relative; }
+      .rail { display: none; }
+      .sidebar { display: none; position: fixed; inset: 0; z-index: 50; width: 80%; max-width: 300px; animation: slideInLeft .25s ease; }
+      .sidebar.mobile-open { display: flex; }
+      #sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 49; }
+      #sidebar-backdrop.visible { display: block; }
+      .chat-pane { height: 100vh; }
+      .chat-topbar { padding: .75rem 1rem; gap: 8px; }
+      .mobile-menu-btn { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; padding: 4px; display: flex; align-items: center; flex-shrink: 0; }
+      #mobile-nav { display: flex; background: var(--s1); border-top: 1px solid var(--border); padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 40; }
+      .mobile-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px; font-size: 10px; font-family: var(--ff); transition: color .15s; }
+      .mobile-nav-btn .icon { font-size: 22px; }
+      .mobile-nav-btn.active { color: var(--accent); }
+      #messages { padding: .75rem 1rem; }
+      .input-area { padding: .75rem 1rem; }
+      .msg-image { max-width: 100%; }
+      .msg-actions { display: flex; }
+      .modal { width: calc(100vw - 2rem); max-width: 340px; }
+    }
   </style>
 </head>
 <body>
@@ -433,6 +462,7 @@
 
 <!-- Main App -->
 <div id="app">
+  <div id="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
   <!-- Icon rail -->
   <div class="rail">
     <div class="rail-logo">L</div>
@@ -455,6 +485,7 @@
   <!-- Chat pane -->
   <div class="chat-pane">
     <div class="chat-topbar" id="chat-topbar">
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
       <div class="empty-state" style="flex:1;flex-direction:row;gap:8px;justify-content:flex-start;">
         <span style="color:var(--muted);font-size:13px;">Select a room or DM to start chatting</span>
       </div>
@@ -480,6 +511,21 @@
       </div>
       <input type="file" id="file-input" accept="image/*,.pdf,.txt" />
     </div>
+  </div>
+  <!-- Mobile bottom nav -->
+  <div id="mobile-nav">
+    <button class="mobile-nav-btn active" id="mnav-rooms" onclick="mobileNav('rooms')">
+      <span class="icon">&#9783;</span>Rooms
+    </button>
+    <button class="mobile-nav-btn" id="mnav-dms" onclick="mobileNav('dms')">
+      <span class="icon">&#9993;</span>DMs
+    </button>
+    <button class="mobile-nav-btn" id="mnav-profile" onclick="showMyProfile()">
+      <span class="icon">&#9786;</span>Profile
+    </button>
+    <button class="mobile-nav-btn" id="mnav-logout" onclick="logout()" style="color:#ff6e6e;">
+      <span class="icon">&#x23FB;</span>Logout
+    </button>
   </div>
 </div>
 
@@ -1120,6 +1166,50 @@ function logout() {
   if (socket) socket.disconnect();
   location.reload();
 }
+
+
+// ── Mobile helpers ────────────────────────────────────────────────────────
+function isMobile() { return window.innerWidth <= 768; }
+
+function toggleMobileSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const bd = $('sidebar-backdrop');
+  const isOpen = sb.classList.contains('mobile-open');
+  sb.classList.toggle('mobile-open', !isOpen);
+  bd.classList.toggle('visible', !isOpen);
+}
+
+function closeMobileSidebar() {
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  $('sidebar-backdrop').classList.remove('visible');
+}
+
+function mobileNav(mode) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  $('mnav-' + mode).classList.add('active');
+  setPanel(mode);
+  toggleMobileSidebar();
+}
+
+// Hide hamburger on desktop
+function updateMenuBtn() {
+  const btn = $('mobile-menu-btn');
+  if (btn) btn.style.display = isMobile() ? 'flex' : 'none';
+}
+window.addEventListener('resize', updateMenuBtn);
+updateMenuBtn();
+
+// Close sidebar when a room/DM is opened on mobile
+const _origOpenRoom = openRoom;
+openRoom = function(roomId) {
+  _origOpenRoom(roomId);
+  if (isMobile()) closeMobileSidebar();
+};
+const _origOpenDm = openDm;
+openDm = function(targetUsername) {
+  _origOpenDm(targetUsername);
+  if (isMobile()) closeMobileSidebar();
+};
 
 if (token && me) {
   initApp();
