@@ -87,7 +87,7 @@ npm run dev    # development with auto-reload
 npm start      # production
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open https://chatapp-9e3j.onrender.com/
 
 > **Tip:** To test with two users, open a second window in incognito mode.
 
